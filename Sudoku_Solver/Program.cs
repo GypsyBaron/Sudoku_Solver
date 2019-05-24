@@ -15,17 +15,45 @@ namespace Sudoku_Solver
 
         static void Main(string[] args)
         {
-            ReadFile(); // Reading sudoku from file "Sudoku"
+            GetDirectory();
+
+            
+            
+            
+            //ReadFile(); // Reading sudoku from file "Sudoku"
             //WriteRealNumbers(); // Inserti into Sudoku real values (Makes faster a little bit);
-            if (!Solved()) Solve(); // If sudoku is not solved yet, use brute force
-            ShowSudoku(); // Show Sudoku table
+            //if (!Solved()) Solve(); // If sudoku is not solved yet, use brute force
+            //ShowSudoku(); // Show Sudoku table
             Console.ReadLine();
         }
 
-        static void ReadFile() // Reading from file
+        static void GetDirectory()
+        {
+            string folderName = "", fileName = "";
+            Console.WriteLine("Enter folder name: ");
+            folderName = Console.ReadLine();
+            if (Directory.Exists(@"C: \Users\Lenovo\Desktop\Sudoku\NeedToSolve\" + folderName))
+            {
+                DirectoryInfo d = new DirectoryInfo(@"C: \Users\Lenovo\Desktop\Sudoku\NeedToSolve\" + folderName); // Set a directory
+                FileInfo[] fileArray = d.GetFiles("*.txt"); // Getting all txt files from that directory
+                for (int i = 0; i < fileArray.Length; i++)
+                {
+                    fileName = fileArray[i].Name; // Get file name
+                    ReadFile(folderName, fileName);
+                    if (!Solved()) Solve();
+                    Console.WriteLine("KIEK KARTU");
+                    ShowSudoku(folderName, fileName);
+                }
+            }
+            else Console.WriteLine("Directory doesn't exist.");
+        }
+
+
+        static void ReadFile(string folderName, string fileName) // Reading from file
         {
             string temp; // Temporary string line from file 
-            StreamReader sr = new StreamReader("../../Sudoku.txt");
+            Console.WriteLine(fileName);
+            StreamReader sr = new StreamReader(@"C: \Users\Lenovo\Desktop\Sudoku\NeedToSolve\" + folderName + @"\" + fileName);
             for (int i = 0; i < 9; i++)
             {
                 temp = sr.ReadLine();
@@ -34,16 +62,29 @@ namespace Sudoku_Solver
             }
         }
 
-        static void ShowSudoku() // Showing sudoku matrica
+        static void ShowSudoku(string folderName, string fileName) // Showing sudoku matrica
         {
-            Console.WriteLine("Sudoku succesfully solved.");
-            Console.WriteLine();
+
+
+            if (!Directory.Exists(@"C: \Users\Lenovo\Desktop\Sudoku\Solved\" + folderName))
+            {
+                Directory.CreateDirectory(@"C: \Users\Lenovo\Desktop\Sudoku\Solved\" + folderName);
+                Console.WriteLine("Folder was created.");
+            }
+                
+            string fileLocation = @"C: \Users\Lenovo\Desktop\Sudoku\Solved\" + folderName + @"\Solved." + fileName;
+
+            StreamWriter sw = new StreamWriter(fileLocation);
+
             for (int i = 0; i < 9; i++)
             {
                 for (int j = 0; j < 9; j++)
-                    Console.Write(sudokuTable[i, j] + " ");
-                Console.WriteLine();
+                    sw.Write(sudokuTable[i, j] + " ");
+                sw.WriteLine();
             }
+
+            sw.Close();
+            Console.WriteLine("Sudoku " + fileName + " from folder " +  folderName + " was succesfully solved.");
         }
 
         static void WriteRealNumbers() // Entering real values by simply Sudoku rules
