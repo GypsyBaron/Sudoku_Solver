@@ -15,19 +15,11 @@ namespace Sudoku_Solver
 
         static void Main(string[] args)
         {
-            GetDirectory();
-
-            
-            
-            
-            //ReadFile(); // Reading sudoku from file "Sudoku"
-            //WriteRealNumbers(); // Inserti into Sudoku real values (Makes faster a little bit);
-            //if (!Solved()) Solve(); // If sudoku is not solved yet, use brute force
-            //ShowSudoku(); // Show Sudoku table
+            PrepareForSolving(); // Prepare folders, files for sudoku solving
             Console.ReadLine();
         }
 
-        static void GetDirectory()
+        static void PrepareForSolving()
         {
             string folderName = "", fileName = "";
             Console.WriteLine("Enter folder name: ");
@@ -38,21 +30,28 @@ namespace Sudoku_Solver
                 FileInfo[] fileArray = d.GetFiles("*.txt"); // Getting all txt files from that directory
                 for (int i = 0; i < fileArray.Length; i++)
                 {
+                    Console.WriteLine();
+                    Console.WriteLine("Sudoku (" + (i + 1) + " from " + fileArray.Length + ")");
+
                     fileName = fileArray[i].Name; // Get file name
-                    ReadFile(folderName, fileName);
-                    if (!Solved()) Solve();
-                    Console.WriteLine("KIEK KARTU");
-                    ShowSudoku(folderName, fileName);
+                    ReadFile(folderName, fileName); // Read sudoku from file
+
+                    if(GoodSudoku())
+                    {
+                        WriteRealNumbers(); // Writing 100% real numbers by formulas
+
+                        if (!Solved()) Solve(); // Checking if sudoku if solved or not
+                        ShowSudoku(folderName, fileName); // Write solved sudoku to file
+                    }
                 }
             }
             else Console.WriteLine("Directory doesn't exist.");
         }
 
-
         static void ReadFile(string folderName, string fileName) // Reading from file
         {
             string temp; // Temporary string line from file 
-            Console.WriteLine(fileName);
+           
             StreamReader sr = new StreamReader(@"C: \Users\Lenovo\Desktop\Sudoku\NeedToSolve\" + folderName + @"\" + fileName);
             for (int i = 0; i < 9; i++)
             {
@@ -87,6 +86,48 @@ namespace Sudoku_Solver
             Console.WriteLine("Sudoku " + fileName + " from folder " +  folderName + " was succesfully solved.");
         }
 
+        static bool GoodSudoku()
+        {
+            int cornerY = 0, cornerX = 0; // Upper left corner coordinates
+
+            for (int i = 0; i < 9; i++) // Checking if row is good
+                for (int j = 0; j < 9; j++)
+                    for (int k = j + 1; k < 9; k++)
+                        if ((sudokuTable[i, j] != 0) && (sudokuTable[i, k] != 0) && (sudokuTable[i, j] == sudokuTable[i, k]))
+                        {
+                            Console.WriteLine("Mistake in " + (i + 1) + " row.");
+                            return false;
+                        }
+
+
+            for (int i = 0; i < 9; i++) // Checking if column is good
+                for (int j = 0; j < 9; j++)
+                    for (int k = j + 1; k < 9; k++)
+                        if (sudokuTable[j, i] != 0 && sudokuTable[j, i] == sudokuTable[k, i])
+                        {
+                            Console.WriteLine("Mistake in " + (i + 1) + " column.");
+                            return false;
+                        }
+
+
+            for (int i = 0; i < 9; i++) // Checking 3x3 matrica
+                for (int j = 0; j < 9; j++)
+                {
+                    cornerY = (i / 3) * 3;
+                    cornerX = (j / 3) * 3;
+
+                    for (int k = 0; k < 3; k++)
+                        for (int l = 0; l < 3; l++)
+                            if (sudokuTable[i, j] != 0 && sudokuTable[i, j] == sudokuTable[cornerY + k, cornerX + l] && (i != (cornerY + k) || j != (cornerX + l)))
+                            {
+                                Console.WriteLine("Mistake in " + (((i / 3) * 3) + (j / 3) + 1) + " 3x3 square.");
+                                return false;
+                            }
+                }
+
+            return true;
+        }
+
         static void WriteRealNumbers() // Entering real values by simply Sudoku rules
         {
             int k = 1; // Number of changes through all circle. Set 1, because while circle should works atleast one time
@@ -96,7 +137,6 @@ namespace Sudoku_Solver
             {
                 k = 0;
                 for (int i = 0; i < 9; i++)
-                {
                     for (int j = 0; j < 9; j++)
                     {
                         n = 0;
@@ -119,7 +159,6 @@ namespace Sudoku_Solver
                             k++; // Plus 1 change
                         }
                     }
-                }
             }
             
         } 
@@ -155,7 +194,7 @@ namespace Sudoku_Solver
 
         static void Solve() // Brute force 
         {
-            Console.WriteLine("EZ PZ");
+            Console.WriteLine("Used brute force power to solve this hard Sudoku");
             int k = HowManyZero(), n = 0;
             int[] yCoordinates = new int[k]; // Cell with zero y coordinates
             int[] xCoordinates = new int[k]; // Cell with zero x coordinates
